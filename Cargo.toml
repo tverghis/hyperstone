@@ -8,6 +8,9 @@ edition = "2018"
 
 [dependencies]
 nom = "5.0"
+protobuf = "2.7"
+nom-varint = "0.1"
+snap = "0.2"
 
 [build-dependencies]
 protoc-rust = "2.7"
