@@ -17,10 +17,16 @@ impl Hyperstone {
     }
 
     /// Starts parsing the replay buffer from the beginning.
+    ///
+    /// # Panics
+    /// This function will panic in the following scenarios:
+    /// 1. The passed-in buffer doesn't start with the expected Source 2 replay signature;
+    /// 2. The buffer is shorter than expected;
+    /// 3. The parser encounters an unidentifiable message.
     pub fn begin_parse(&self, input: &[u8]) {
         let input = match combinators::take_source2_signature(input) {
             Ok((inp, _)) => inp,
-            _ => panic!("Couldn't verify Source 2 signature in the provided file."),
+            _ => panic!("Couldn't verify Source 2 signature for the provided buffer."),
         };
 
         let (input, _) = combinators::take_replay_size_info(input).unwrap();
@@ -51,7 +57,7 @@ impl Hyperstone {
     }
 
     /// Signals the parser to stop parsing at a specific game tick.
-    /// If `stop_tick` has already been passed, this will do nothing.
+    /// If `stop_tick` has already been crossed, this will do nothing.
     pub fn stop_parse_at_tick(&mut self, stop_tick: u32) {
         self.stop_at_tick = Some(stop_tick);
     }

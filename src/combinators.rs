@@ -42,23 +42,23 @@ pub fn take_outer_message(input: &[u8]) -> IResult<&[u8], OuterMessage> {
     Ok((input, OuterMessage::new(tick, message_type, data)))
 }
 
-pub fn take_command(input: &[u8]) -> IResult<&[u8], u32> {
+fn take_command(input: &[u8]) -> IResult<&[u8], u32> {
     take_varint(input)
 }
 
-pub fn take_tick(input: &[u8]) -> IResult<&[u8], u32> {
+fn take_tick(input: &[u8]) -> IResult<&[u8], u32> {
     take_varint(input)
 }
 
-pub fn take_size(input: &[u8]) -> IResult<&[u8], u32> {
+fn take_size(input: &[u8]) -> IResult<&[u8], u32> {
     take_varint(input)
 }
 
-pub fn take_data(input: &[u8], size: u32) -> IResult<&[u8], &[u8]> {
+fn take_data(input: &[u8], size: u32) -> IResult<&[u8], &[u8]> {
     take(size)(input)
 }
 
-pub fn take_varint(input: &[u8]) -> IResult<&[u8], u32> {
+fn take_varint(input: &[u8]) -> IResult<&[u8], u32> {
     let mut res: usize = 0;
     let mut count: usize = 0;
     let mut remainder = input;
