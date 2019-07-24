@@ -3,6 +3,13 @@ use std::fs::{self, File};
 use std::io::Write;
 use std::process;
 
+macro_rules! bail {
+    ($($arg:tt)*) => {{
+        eprintln!($($arg)*);
+        std::process::exit(1);
+    }}
+}
+
 fn main() {
     // First check if the src/protos directory is empty or not...
     match fs::read_dir("./src/protos") {
@@ -17,8 +24,7 @@ fn main() {
             match fs::create_dir("./src/protos") {
                 Ok(_) => println!("src/protos directory created."),
                 Err(e) => {
-                    eprintln!("Failed to create src/protos: {}", e);
-                    process::exit(1);
+                    bail!("Failed to create src/protos: {}", e);
                 }
             }
         }
@@ -48,16 +54,14 @@ fn main() {
     }) {
         Ok(_) => println!("Protobufs compiled successfully."),
         Err(e) => {
-            eprintln!("Error compiling protobufs: {}", e);
-            process::exit(1);
+            bail!("Error compiling protobufs: {}", e);
         }
     }
 
     match gen_mod_rs() {
         Ok(_) => println!("Generated src/protos/mod.rs"),
         Err(e) => {
-            eprintln!("Failed to generate src/protos/mod.rs: {}", e);
-            process::exit(1);
+            bail!("Failed to generate src/protos/mod.rs: {}", e);
         }
     }
 }
