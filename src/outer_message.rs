@@ -33,4 +33,9 @@ impl OuterMessage {
     pub fn get_data(&self) -> &[u8] {
         &self.data
     }
+
+    /// Returns the tick associated with this message.
+    pub fn tick(&self) -> u32 {
+        self.tick
+    }
 }

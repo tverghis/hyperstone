@@ -22,6 +22,7 @@ pub struct Hyperstone {
     after_stop: Option<fn()>,
 }
 
+// Public functions
 impl Hyperstone {
     pub fn new() -> Hyperstone {
         Hyperstone {
@@ -36,7 +37,7 @@ impl Hyperstone {
     /// 1. The passed-in buffer doesn't start with the expected Source 2 replay signature;
     /// 2. The buffer is shorter than expected;
     /// 3. The parser encounters an unidentifiable message.
-    pub fn begin_parse(&self, input: &[u8]) -> HyperstoneParseResult<()> {
+    pub fn begin_parse(&mut self, input: &[u8]) -> HyperstoneParseResult<()> {
         let input = match combinators::take_source2_signature(input) {
             Ok((inp, _)) => inp,
             _ => return Err(HyperstoneError::UnverifiableBuffer),
@@ -51,17 +52,18 @@ impl Hyperstone {
                 break;
             }
 
-            if let Some(tick) = self.stop_at_tick {
-                if self.current_tick >= tick {
-                    break;
-                }
-            }
-
             input = match combinators::take_outer_message(input) {
                 Ok((remainder, message)) => {
+                    if self.stop_tick_passed(message.tick()) {
+                        return Ok(());
+                    }
+
+                    self.current_tick = message.tick();
+
                     if let Some(notifier) = notifier_for_demo_cmd(message.get_demo_cmd()?) {
                         notifier(message.get_data());
                     };
+
                     remainder
                 }
                 _ => return Err(HyperstoneError::UnknownOuterMessage),
@@ -94,6 +96,19 @@ impl Hyperstone {
     /// Sets the callback to be invoked once the parser has stopped.
     pub fn do_after_stop(&mut self, after_stop: Option<fn()>) {
         self.after_stop = after_stop;
+    }
+}
+
+// Private functions
+impl Hyperstone {
+    fn stop_tick_passed(&self, current_tick: u32) -> bool {
+        if let Some(stop_tick) = self.stop_at_tick {
+            if current_tick > stop_tick {
+                return true;
+            }
+        }
+
+        false
     }
 }
 
@@ -132,7 +147,7 @@ mod test {
     #[test]
     fn bad_signature() {
         let data = b"thesearen'tthebytesyou'relookingfor";
-        let parser = Hyperstone::new();
+        let mut parser = Hyperstone::new();
         assert_eq!(
             parser.begin_parse(data),
             Err(HyperstoneError::UnverifiableBuffer)
@@ -142,7 +157,7 @@ mod test {
     #[test]
     fn test() {
         let data = include_bytes!("../assets/replay1.dem");
-        let parser = Hyperstone::new();
+        let mut parser = Hyperstone::new();
 
         parser.begin_parse(data);
     }
