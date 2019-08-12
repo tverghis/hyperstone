@@ -82,8 +82,8 @@ impl Hyperstone {
 
     /// Signals the parser to stop parsing at a specific game tick.
     /// If `stop_tick` has already been crossed, this will do nothing.
-    pub fn stop_parse_at_tick(&mut self, stop_tick: u32) {
-        self.stop_at_tick = Some(stop_tick);
+    pub fn stop_parse_at_tick(&mut self, stop_tick: Option<u32>) {
+        self.stop_at_tick = stop_tick;
     }
 
     /// Returns the last game tick that the parser processed.
