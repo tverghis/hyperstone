@@ -55,6 +55,7 @@ impl Hyperstone {
             input = match combinators::take_outer_message(input) {
                 Ok((remainder, message)) => {
                     if self.stop_tick_passed(message.tick()) {
+                        self.invoke_after_stop();
                         return Ok(());
                     }
 
@@ -70,9 +71,7 @@ impl Hyperstone {
             };
         }
 
-        if let Some(after_stop_fn) = self.after_stop {
-            (after_stop_fn)();
-        }
+        self.invoke_after_stop();
 
         Ok(())
     }
@@ -109,6 +108,12 @@ impl Hyperstone {
         }
 
         false
+    }
+
+    fn invoke_after_stop(&self) {
+        if let Some(after_stop_fn) = self.after_stop {
+            (after_stop_fn)();
+        }
     }
 }
 
